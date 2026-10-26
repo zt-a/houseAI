@@ -1,0 +1,22 @@
+nohup: ввод игнорируется
+Data: 1167 rows
+10-fold CV...
+Fold 1/10
+Fold 2/10
+Fold 3/10
+Fold 4/10
+Fold 5/10
+Fold 6/10
+Fold 7/10
+Fold 8/10
+Fold 9/10
+Fold 10/10
+
+Best weight CatBoost: 0.707
+
+=== 10-Fold CV OOF ===
+MAE: 1,150,535 сом
+RMSE: 1,792,658 сом
+MAPE: 11.84%
+R2: 0.8528
+Saved cv_results.json
