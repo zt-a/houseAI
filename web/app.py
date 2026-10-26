@@ -58,6 +58,11 @@ async def about(request: Request):
     return templates.TemplateResponse(request, "about.html", {})
 
 
+@app.get("/scheme", response_class=HTMLResponse)
+async def scheme(request: Request):
+    return templates.TemplateResponse(request, "boosting_scheme.html", {})
+
+
 @app.post("/predict", response_class=HTMLResponse)
 async def predict(
     request: Request,

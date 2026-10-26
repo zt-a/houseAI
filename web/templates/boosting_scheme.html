@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Схема градиентного бустинга</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans, sans-serif;
+            background: linear-style-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 40px;
+            font-size: 16px;
+        }
+        .section {
+            margin-bottom: 40px;
+        }
+        .section-title {
+            font-size: 22px;
+            color: #667eea;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #667eea;
+        }
+        .diagram {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 30px;
+        }
+        .row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 40px;
+            flex-wrap: wrap;
+        }
+        .node {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            text-align: center;
+            min-width: 200px;
+            position: relative;
+        }
+        .node.tree {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            box-shadow: 0 4px 15px rgba(245, 87, 108, 0.4);
+        }
+        .node.correct {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            color: #333;
+            box-shadow: 0 4px 15px rgba(67, 233, 123, 0.4);
+        }
+        .node.ensemble {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            color: #333;
+            box-shadow: 0 4px 15px rgba(250, 112, 154, 0.4);
+        }
+        .node-label {
+            font-weight: bold;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+        .node-desc {
+            font-size: 12px;
+            opacity: 0.9;
+        }
+        .arrow {
+            font-size: 40px;
+            color: #667eea;
+            font-weight: bold;
+        }
+        .arrow-down {
+            font-size: 40px;
+            color: #667eea;
+            font-weight: bold;
+        }
+        .tree-diagram {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 10px;
+            width: 100%;
+        }
+        .tree-level {
+            display: flex;
+            gap: 60px;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .tree-node {
+            background: white;
+            border: 3px solid #667eea;
+            padding: 12px 20px;
+            border-radius: 8px;
+            text-align: center;
+            min-width: 150px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .tree-node.leaf {
+            background: #d4edda;
+            border-color: #28a745;
+        }
+        .tree-node.decision {
+            background: #fff3cd;
+            border-color: #ffc107;
+        }
+        .formula {
+            background: #e7f3ff;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            font-size: 18px;
+            font-family: 'Courier New', monospace;
+            border-left: 4px solid #667eea;
+        }
+        .comparison {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        .card-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        .highlight {
+            background: #fff3cd;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .legend {
+            display: flex;
+            gap: 30px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .legend-color {
+            width: 30px;
+            height: 30px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Схема работы градиентного бустинга в проекте</h1>
+        <p class="subtitle">Прогнозирование цен на квартиры в г. Бишкек | CatBoost + LightGBM</p>
+
+        <!-- Секция 1: Принцип градиентного бустинга -->
+        <div class="section">
+            <h2 class="section-title">1. Принцип градиентного бустинга (последовательное построение деревьев)</h2>
+            <div class="diagram">
+                <div class="row">
+                    <div class="node">
+                        <div class="node-label">Исходные данные</div>
+                        <div class="node-desc">Площадь, этаж, район, год постройки и др.</div>
+                    </div>
+                </div>
+                <div class="arrow-down">↓</div>
+                
+                <div class="row">
+                    <div class="node tree">
+                        <div class="node-label">Дерево 1</div>
+                        <div class="node-desc">Грубое предсказание F1(x)</div>
+                    </div>
+                    <div class="arrow">→</div>
+                    <div class="node">
+                        <div class="node-label">Ошибка 1</div>
+                        <div class="node-desc">Остатки (разница с реальной ценой)</div>
+                    </div>
+                </div>
+                <div class="arrow-down">↓</div>
+                
+                <div class="row">
+                    <div class="node tree">
+                        <div class="node-label">Дерево 2</div>
+                        <div class="node-desc">Исправляет ошибки дерева 1</div>
+                    </div>
+                    <div class="arrow">→</div>
+                    <div class="node">
+                        <div class="node-label">Ошибка 2</div>
+                        <div class="node-desc">Меньше, чем у дерева 1</div>
+                    </div>
+                </div>
+                <div class="arrow-down">↓</div>
+                
+                <div class="row">
+                    <div class="node tree">
+                        <div class="node-label">Дерево 3, 4, ..., N</div>
+                        <div class="node-desc">Каждое следующее исправляет ошибки предыдущих</div>
+                    </div>
+                </div>
+                <div class="arrow-down">↓</div>
+                
+                <div class="row">
+                    <div class="node correct">
+                        <div class="node-label">Итоговая модель</div>
+                        <div class="node-desc">Сумма всех деревьев = точное предсказание</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="formula" style="margin-top: 30px;">
+                F(x) = F₁(x) + α·h₁(x) + α·h₂(x) + ... + α·hₙ(x)
+                <div style="font-size: 14px; margin-top: 5px; color: #666;">
+                    где h₁,h₂,...,hₙ - решающие деревья, α - вес каждого дерева
+                </div>
+            </div>
+        </div>
+
+        <!-- Секция 2: Структура решающего дерева -->
+        <div class="section">
+            <h2 class="section-title">2. Пример структуры решающего дерева</h2>
+            <div class="tree-diagram">
+                <div class="tree-level">
+                    <div class="tree-node decision">
+                        <div style="font-weight: bold;">Площадь > 60 м²?</div>
+                    </div>
+                </div>
+                <div style="font-size: 30px; color: #667eea;">↓</div>
+                <div class="tree-level">
+                    <div>
+                        <div style="text-align: center; margin-bottom: 10px; color: #28a745; font-weight: bold;">ДА</div>
+                        <div class="tree-node decision">
+                            <div style="font-weight: bold;">Этаж > 3?</div>
+                        </div>
+                    </div>
+                    <div>
+                        <div style="text-align: center; margin-bottom: 10px; color: #dc3545; font-weight: bold;">НЕТ</div>
+                        <div class="tree-node decision">
+                            <div style="font-weight: bold;">Год постройки > 2010?</div>
+                        </div>
+                    </div>
+                </div>
+                <div style="font-size: 30px; color: #667eea;">↓</div>
+                <div class="tree-level">
+                    <div class="tree-node leaf">
+                        <div style="font-weight: bold;">ДА</div>
+                        <div>Цена: ~11 млн сом</div>
+                    </div>
+                    <div class="tree-node leaf">
+                        <div style="font-weight: bold;">НЕТ</div>
+                        <div>Цена: ~9 млн сом</div>
+                    </div>
+                    <div class="tree-node leaf">
+                        <div style="font-weight: bold;">ДА</div>
+                        <div>Цена: ~7 млн сом</div>
+                    </div>
+                    <div class="tree-node leaf">
+                        <div style="font-weight: bold;">НЕТ</div>
+                        <div>Цена: ~5 млн сом</div>
+                    </div>
+                </div>
+            </div>
+            <p style="text-align: center; margin-top: 15px; color: #666; font-style: italic;">
+                Одно дерево задаёт вопросы и приходит к итоговому значению (листья дерева)
+            </p>
+        </div>
+
+        <!-- Секция 3: Сравнение моделей -->
+        <div class="section">
+            <h2 class="section-title">3. Сравнение моделей в нашем проекте</h2>
+            <div class="comparison">
+                <div class="card">
+                    <div class="card-title">Линейная регрессия (бенчмарк)</div>
+                    <p><strong>Принцип:</strong> Прямая зависимость</p>
+                    <p><strong>Формула:</strong> y = w₁*x₁ + w₂*x₂ + ... + b</p>
+                    <p><strong>Особенность:</strong> Считает, что каждый признак влияет независимо и линейно</p>
+                    <p><strong>Применение:</strong> Мы использовали только для сравнения</p>
+                    <p style="color: #dc3545;"><strong>❌ Менее точна для сложных зависимостей</strong></p>
+                </div>
+                <div class="card">
+                    <div class="card-title">CatBoost</div>
+                    <p><strong>Тип:</strong> Градиентный бустинг</p>
+                    <p><strong>Разработчик:</strong> Яндекс</p>
+                    <p><strong>Сильная сторона:</strong> Отлично работает с категориальными признаками (район, состояние)</p>
+                    <p><strong>Особенность:</strong> Умно обрабатывает категории без ручного кодирования</p>
+                    <p style="color: #28a745;"><strong>✓ Вес в ансамбле: 70,7%</strong></p>
+                </div>
+                <div class="card">
+                    <div class="card-title">LightGBM</div>
+                    <p><strong>Тип:</strong> Градиентный бустинг</p>
+                    <p><strong>Разработчик:</strong> Microsoft</p>
+                    <p><strong>Сильная сторона:</strong> Быстрый, строит деревья по листьям</p>
+                    <p><strong>Особенность:</strong> Видит данные с другой точки зрения, дополняет CatBoost</p>
+                    <p style="color: #28a745;"><strong>✓ Вес в ансамбле: 29,3%</strong></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Секция 4: Ансамбль -->
+        <div class="section">
+            <h2 class="section-title">4. Ансамбль CatBoost + LightGBM</h2>
+            <div class="diagram">
+                <div class="row">
+                    <div class="node tree">
+                        <div class="node-label">CatBoost модель</div>
+                        <div class="node-desc">Предсказание цены №1</div>
+                    </div>
+                    <div class="node tree" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                        <div class="node-label">LightGBM модель</div>
+                        <div class="node-desc">Предсказание цены №2</div>
+                    </div>
+                </div>
+                <div class="arrow-down">↓</div>
+                <div class="row">
+                    <div class="node">
+                        <div class="node-label">Взвешенное усреднение</div>
+                        <div class="node-desc">0.707 × CatBoost + 0.293 × LightGBM</div>
+                    </div>
+                </div>
+                <div class="arrow-down">↓</div>
+                <div class="row">
+                    <div class="node ensemble">
+                        <div class="node-label">Финальное предсказание</div>
+                        <div class="node-desc">Более точное, чем у каждой модели по отдельности</div>
+                    </div>
+                </div>
+            </div>
+            <div class="formula" style="margin-top: 30px;">
+                P_final = 0.707 × P_catboost + 0.293 × P_lightgbm
+            </div>
+        </div>
+
+        <!-- Секция 5: Преобразование данных -->
+        <div class="section">
+            <h2 class="section-title">5. Преобразование данных в числа</h2>
+            <div class="comparison">
+                <div class="card">
+                    <div class="card-title">Числовые признаки</div>
+                    <ul style="line-height: 1.8;">
+                        <li><span class="highlight">Площадь, этаж, год</span> - оставлены как есть</li>
+                        <li><span class="highlight">Возраст дома</span> - посчитан: 2026 - год постройки</li>
+                        <li><span class="highlight">Расстояние до центра</span> - формула Haversine по lat/lng</li>
+                        <li><span class="highlight">Соотношения</span> - floor_ratio, area_per_room и др.</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <div class="card-title">Категориальные признаки</div>
+                    <ul style="line-height: 1.8;">
+                        <li><span class="highlight">Микрорайон из адреса</span> - парсинг регулярными выражениями</li>
+                        <li><span class="highlight">Состояние, отопление</span> - переданы в CatBoost как категории</li>
+                        <li><span class="highlight">Target Encoding</span> - средняя цена по району</li>
+                        <li><span class="highlight">KMeans кластеры</span> - географические кластеры</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <div class="card-title">Бинарные и прочие</div>
+                    <ul style="line-height: 1.8;">
+                        <li><span class="highlight">Удобства из JSON</span> - 0 или 1 (лифт, балкон)</li>
+                        <li><span class="highlight">Первый/последний этаж</span> - бинарные признаки</li>
+                        <li><span class="highlight">log1p(price)</span> - логарифм цены при обучении</li>
+                        <li><span class="highlight">expm1(pred)</span> - обратное преобразование</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Легенда -->
+        <div class="section">
+            <h2 class="section-title">Легенда</h2>
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-color" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);"></div>
+                    <span>Исходные данные / финальное предсказание</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);"></div>
+                    <span>Решающее дерево (градиентный бустинг)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);"></div>
+                    <span>Корректирующий этап</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);"></div>
+                    <span>Ансамбль моделей</span>
+                </div>
+            </div>
+        </div>
+
+        <div style="text-align: center; margin-top: 40px; padding-top: 20px; border-top: 2px solid #e0e0e0; color: #666;">
+            <p><strong>Проект:</strong> Прогнозирование цен на квартиры в г. Бишкек | Группа Пин-1-24 | Тагайбеков Жыргалбек</p>
+            <p style="margin-top: 5px;"><strong>Модели:</strong> CatBoost (70,7%) + LightGBM (29,3%) | <strong>Тип:</strong> Ансамбль градиентного бустинга на решающих деревьях</p>
+        </div>
+    </div>
+</body>
+</html>
