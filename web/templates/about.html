@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>О проекте - Прогнозирование цен на квартиры в Бишкеке</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background: #f5f7fa; }
+        .card { border: none; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 2rem 0; }
+    </style>
+</head>
+<body>
+    <div class="header mb-4">
+        <div class="container">
+            <h1 class="text-center mb-2">О проекте</h1>
+            <p class="text-center mb-0">Прогнозирование цен на квартиры в городе Бишкек</p>
+        </div>
+    </div>
+
+    <div class="container mb-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="mb-3">
+                    <a href="/" class="btn btn-outline-primary">← На главную</a>
+                </div>
+
+                <div class="card mb-4">
+                    <div class="card-body p-4">
+                        <h3 class="mb-3">Информация о работе</h3>
+                        <table class="table table-borderless">
+                            <tr><td class="fw-bold" style="width: 250px;">Учебное заведение</td><td>Модульный КГУ им. И. Арабаева</td></tr>
+                            <tr><td class="fw-bold">Факультет</td><td>ИНИТ</td></tr>
+                            <tr><td class="fw-bold">Группа</td><td>Пин-1-24</td></tr>
+                            <tr><td class="fw-bold">Дисциплина</td><td>Машинное обучение</td></tr>
+                            <tr><td class="fw-bold">Студент</td><td>Тагайбеков Жыргалбек</td></tr>
+                            <tr><td class="fw-bold">Преподаватель</td><td>Садырова Максаткуль Рыспековна</td></tr>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="card mb-4">
+                    <div class="card-body p-4">
+                        <h3 class="mb-3">Цель работы</h3>
+                        <p>Разработать модель машинного обучения для прогнозирования стоимости квартир в городе Бишкек на основе данных с сайта housekg.kg.</p>
+                    </div>
+                </div>
+
+                <div class="card mb-4">
+                    <div class="card-body p-4">
+                        <h3 class="mb-3">Стек технологий</h3>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5>Язык и данные</h5>
+                                <ul>
+                                    <li>Python 3.14</li>
+                                    <li>pandas, numpy, pyarrow</li>
+                                    <li>SQLAlchemy</li>
+                                </ul>
+                                <h5>Машинное обучение</h5>
+                                <ul>
+                                    <li>scikit-learn</li>
+                                    <li>CatBoost</li>
+                                    <li>LightGBM</li>
+                                    <li>Optuna</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h5>Веб-разработка</h5>
+                                <ul>
+                                    <li>FastAPI, Uvicorn</li>
+                                    <li>Jinja2</li>
+                                    <li>Bootstrap 5</li>
+                                </ul>
+                                <h5>Дополнительно</h5>
+                                <ul>
+                                    <li>geopy (Haversine)</li>
+                                    <li>joblib</li>
+                                    <li>matplotlib, seaborn</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card mb-4">
+                    <div class="card-body p-4">
+                        <h3 class="mb-3">Как готовили датасет</h3>
+                        <ol>
+                            <li><strong>Сбор данных</strong> - SQLite база housekg.db, таблица properties</li>
+                            <li><strong>Фильтрация</strong> - только квартиры в Бишкеке, удаление пустых цен/площадей</li>
+                            <li><strong>Очистка выбросов</strong> - площадь 15-250 м², цена 1-40 млн сом, цена за м² 10-200 тыс сом</li>
+                            <li><strong>Feature Engineering</strong> - возраст здания, соотношения площадей, расстояние до центра по Haversine</li>
+                            <li><strong>Геокластеризация</strong> - KMeans по координатам (15 кластеров)</li>
+                            <li><strong>Парсинг адреса</strong> - извлечение микрорайонов из поля address (т.к. district был пуст)</li>
+                            <li><strong>Парсинг JSON</strong> - флаги удобств из features_json</li>
+                            <li><strong>Target Encoding</strong> - кодирование районов с KFold кросс-валидацией</li>
+                        </ol>
+                    </div>
+                </div>
+
+                <div class="card mb-4">
+                    <div class="card-body p-4">
+                        <h3 class="mb-3">Машинное обучение</h3>
+                        <ul>
+                            <li><strong>Ансамбль</strong> - CatBoost + LightGBM с взвешенным блендингом</li>
+                            <li><strong>Трансформация</strong> - обучение на log1p(price), предсказание через expm1</li>
+                            <li><strong>Кросс-валидация</strong> - 10-fold KFold для объективной оценки</li>
+                            <li><strong>Оптимизация</strong> - Optuna для подбора весов ансамбля</li>
+                            <li><strong>Оптимальные веса</strong> - CatBoost 70.7%, LightGBM 29.3%</li>
+                        </ul>
+                        <h5 class="mt-3">Результаты (10-fold CV)</h5>
+                        <table class="table">
+                            <thead><tr><th>MAE</th><th>RMSE</th><th>MAPE</th><th>R²</th></tr></thead>
+                            <tbody><tr><td>1 151 000 сом</td><td>1 793 000 сом</td><td>11.84%</td><td>0.853</td></tr></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="card mb-4">
+                    <div class="card-body p-4">
+                        <h3 class="mb-3">Проблемы и решения</h3>
+                        <table class="table">
+                            <thead><tr><th>Проблема</th><th>Решение</th></tr></thead>
+                            <tbody>
+                                <tr><td>Пустое поле district</td><td>Парсинг микрорайонов из address</td></tr>
+                                <tr><td>Большой размер БД для GitHub</td><td>Исключение через .gitignore</td></tr>
+                                <tr><td>Асимметрия цен</td><td>Логарифмическое преобразование</td></tr>
+                                <tr><td>Утечка при кодировании</td><td>Target Encoding с KFold</td></tr>
+                                <tr><td>Разные алгоритмы</td><td>Блендинг двух моделей</td></tr>
+                                <tr><td>Несовместимость библиотек</td><td>Обновление зависимостей</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="text-center">
+                    <a href="https://github.com/zt-a/houseAI" target="_blank" class="btn btn-dark">GitHub репозиторий</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

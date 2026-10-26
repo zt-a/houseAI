@@ -53,6 +53,11 @@ async def home(request: Request):
     return templates.TemplateResponse(request, "index.html", {"result": None})
 
 
+@app.get("/about", response_class=HTMLResponse)
+async def about(request: Request):
+    return templates.TemplateResponse(request, "about.html", {})
+
+
 @app.post("/predict", response_class=HTMLResponse)
 async def predict(
     request: Request,
